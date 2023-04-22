@@ -444,7 +444,7 @@ func (x *SessionConfiguration) GetSessionData() []byte {
 }
 
 // request container to initialize a session,
-//container send a session state message back to notify session is ready for client use
+// container send a session state message back to notify session is ready for client use
 type OpenSession struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -493,7 +493,7 @@ func (x *OpenSession) GetSessionConfiguration() *SessionConfiguration {
 }
 
 // close session and notify client to left, and container will close session after gracePeriodSeconds
-//container send a session state message back to notify session is closed
+// container send a session state message back to notify session is closed
 type CloseSession struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -542,7 +542,7 @@ func (x *CloseSession) GetGracePeriodSeconds() int64 {
 }
 
 // ping session and request container to report its status container send a session state message back,
-//if session do not reply ping request consecutively, session is considered as dead, and pod will be terminated
+// if session do not reply ping request consecutively, session is considered as dead, and pod will be terminated
 type PingSession struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

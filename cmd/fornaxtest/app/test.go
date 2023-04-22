@@ -417,7 +417,7 @@ func (sn TestApplicationArray) Len() int {
 	return len(sn)
 }
 
-//so, sort latency from smaller to lager value
+// so, sort latency from smaller to lager value
 func (sn TestApplicationArray) Less(i, j int) bool {
 	return sn[i].availableTimeMilli-sn[i].creationTimeMilli < sn[j].availableTimeMilli-sn[j].creationTimeMilli
 }
@@ -445,7 +445,7 @@ func (sn TestPodArray) Len() int {
 	return len(sn)
 }
 
-//so, sort latency from smaller to lager value
+// so, sort latency from smaller to lager value
 func (sn TestPodArray) Less(i, j int) bool {
 	return sn[i].watchAvailableTimeMilli-sn[i].watchCreationTimeMilli < sn[j].watchAvailableTimeMilli-sn[j].watchCreationTimeMilli
 }
@@ -460,7 +460,7 @@ func (sn TestSessionArray) Len() int {
 	return len(sn)
 }
 
-//so, sort latency from smaller to lager value
+// so, sort latency from smaller to lager value
 func (sn TestSessionArray) Less(i, j int) bool {
 	return sn[i].watchAvailableTimeMilli-sn[i].apiCreationTimeMilli < sn[j].watchAvailableTimeMilli-sn[j].apiCreationTimeMilli
 }

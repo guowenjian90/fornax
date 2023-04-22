@@ -162,7 +162,7 @@ func (ps PendingSessions) Len() int {
 	return len(ps)
 }
 
-//so, sort latency from smaller to lager value
+// so, sort latency from smaller to lager value
 func (ps PendingSessions) Less(i, j int) bool {
 	return ps[i].session.CreationTimestamp.Before(&ps[j].session.CreationTimestamp)
 }

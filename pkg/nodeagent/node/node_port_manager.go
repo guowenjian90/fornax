@@ -70,7 +70,7 @@ func (pm *HostPortRange) deallocateHostPort(containerPorts []*v1.ContainerPort) 
 	}
 }
 
-//allocateHostPort find not used host port range and set unique host port for each container port from this range,
+// allocateHostPort find not used host port range and set unique host port for each container port from this range,
 // and mark range is used, if it can not allocate host port for all containter port, it rollback and return InSufficientHostPortError
 func (pm *HostPortRange) allocateHostPort(containerPorts []*v1.ContainerPort) error {
 	pm.mu.Lock()

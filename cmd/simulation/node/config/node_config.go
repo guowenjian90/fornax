@@ -67,3 +67,54 @@ func DefaultNodeConfiguration() (*SimulationNodeConfiguration, error) {
 func ValidateNodeConfiguration(*SimulationNodeConfiguration) []error {
 	return nil
 }
+
+// // ReservedMemoryVar is used for validating a command line option that represents a reserved memory. It implements the pflag.Value interface
+// type ReservedMemoryVar struct {
+//   Value       *[]kubeletconfig.MemoryReservation
+//   initialized bool // set to true after the first Set call
+// }
+//
+// // Set sets the flag value
+// func (v *ReservedMemoryVar) Set(s string) error {
+//   if v.Value == nil {
+//     return fmt.Errorf("no target (nil pointer to *[]MemoryReservation")
+//   }
+//
+//   if s == "" {
+//     v.Value = nil
+//     return nil
+//   }
+//
+//   if !v.initialized || *v.Value == nil {
+//     *v.Value = make([]kubeletconfig.MemoryReservation, 0)
+//     v.initialized = true
+//   }
+//
+//   if s == "" {
+//     return nil
+//   }
+//
+//   numaNodeReservations := strings.Split(s, ";")
+//   for _, reservation := range numaNodeReservations {
+//     numaNodeReservation := strings.Split(reservation, ":")
+//     if len(numaNodeReservation) != 2 {
+//       return fmt.Errorf("the reserved memory has incorrect format, expected numaNodeID:type=quantity[,type=quantity...], got %s", reservation)
+//     }
+//     memoryTypeReservations := strings.Split(numaNodeReservation[1], ",")
+//     if len(memoryTypeReservations) < 1 {
+//       return fmt.Errorf("the reserved memory has incorrect format, expected numaNodeID:type=quantity[,type=quantity...], got %s", reservation)
+//     }
+//     numaNodeID, err := strconv.Atoi(numaNodeReservation[0])
+//     if err != nil {
+//       return fmt.Errorf("failed to convert the NUMA node ID, exptected integer, got %s", numaNodeReservation[0])
+//     }
+//
+//     memoryReservation := kubeletconfig.MemoryReservation{
+//       NumaNode: int32(numaNodeID),
+//       Limits:   map[v1.ResourceName]resource.Quantity{},
+//     }
+//
+//     for _, memoryTypeReservation := range memoryTypeReservations {
+//       limit := strings.Split(memoryTypeReservation, "=")
+//       if len(limit) != 2 {
+//         return fmt.Errorf("the reserved limit has incorrect value, expected type=quantatity, got %s", memoryTypeReservation)

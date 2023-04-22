@@ -38,29 +38,34 @@ help: ## Display this help.
 manifests: controller-gen-tool ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./pkg/apis/..." output:crd:artifacts:config=config/crd/bases
 
-## Generate code for resources
+## Generate code for fornax external api resources and internal grpc protocol
 .PHONY: generate
-generate: controller-gen openapi-gen protobuf-gen
+generate: resource-generate internalapi-grpc-gen
 
-## Generate code for rest api resource model, containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
-.PHONY: controller-gen
-controller-gen: code-gen-tool
+## Generate k8s rest api code for fornax api resources
+.PHONY: resource-generate
+# resource-generate: resource-controller-gen resource-openapi-gen resource-protobuf-gen
+resource-generate: resource-controller-gen resource-openapi-gen
+
+## Generate code for rest resource code for fornaxcore external api resource model, containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
+.PHONY: resource-controller-gen
+resource-controller-gen: code-gen-tool
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./pkg/apis/core/..."
 
 ## Generate openapi spec for api resource model
 PROTOC_GEN_GOGO = $(shell pwd)/bin/protoc-gen-gogo
-.PHONY: protobuf-gen
-protobuf-gen: code-gen-tool
+.PHONY: resource-protobuf-gen
+resource-protobuf-gen: code-gen-tool
 	$(call go-get-tool,$(PROTOC_GEN_GOGO),github.com/gogo/protobuf/protoc-gen-gogo@v1.3.2)
-	# $(GO_TO_PROTOBUF) --go-header-file="./hack/boilerplate.go.txt" --packages="centaurusinfra.io/fornax-serverless/pkg/apis/core/v1" --output-base="protobuf" --proto-import="./vendor" --vendor-output-base="./vendor" --only-idl
 	$(GO_TO_PROTOBUF) --go-header-file="./hack/boilerplate.go.txt" \
 		--packages="centaurusinfra.io/fornax-serverless/pkg/apis/core/v1" \
 		--proto-import="./vendor" --vendor-output-base="./vendor" \
-		--apimachinery-packages="+k8s.io/apimachinery/pkg/util/intstr,+k8s.io/apimachinery/pkg/api/resource,+k8s.io/apimachinery/pkg/runtime/schema,+k8s.io/apimachinery/pkg/runtime,k8s.io/apimachinery/pkg/apis/meta/v1,k8s.io/apimachinery/pkg/apis/meta/v1beta1,k8s.io/apimachinery/pkg/apis/testapigroup/v1,k8s.io/api/core/v1"
+		--apimachinery-packages="+k8s.io/apimachinery/pkg/util/intstr,+k8s.io/apimachinery/pkg/api/resource,+k8s.io/apimachinery/pkg/runtime/schema,+k8s.io/apimachinery/pkg/runtime,k8s.io/apimachinery/pkg/apis/meta/v1,k8s.io/apimachinery/pkg/apis/meta/v1beta1,k8s.io/api/core/v1"
+		# --apimachinery-packages="+k8s.io/apimachinery/pkg/util/intstr,+k8s.io/apimachinery/pkg/api/resource,+k8s.io/apimachinery/pkg/runtime/schema,+k8s.io/apimachinery/pkg/runtime,k8s.io/apimachinery/pkg/apis/meta/v1,k8s.io/apimachinery/pkg/apis/meta/v1beta1,k8s.io/apimachinery/pkg/apis/testapigroup/v1,k8s.io/api/core/v1"
 
-## Generate openapi spec for api resource model
-.PHONY: openapi-gen
-openapi-gen: code-gen-tool
+## Generate openapi spec for fornax external api resource model
+.PHONY: resource-openapi-gen
+resource-openapi-gen: code-gen-tool
 	$(OPENAPI_GEN) --go-header-file="hack/boilerplate.go.txt" --input-dirs="./pkg/apis/core/..." --output-package="centaurusinfra.io/fornax-serverless/pkg/apis/openapi"
 
 ## Generate client-go sdk containing clientset, lister, and informer method implementations.
@@ -206,12 +211,15 @@ code-gen-tool: ## Download client-genl, lister-gen and informer-gen locally if n
 	$(call go-get-tool,$(GO_TO_PROTOBUF),k8s.io/code-generator/cmd/go-to-protobuf@v0.23.1)
 	$(call go-get-tool,$(OPENAPI_GEN),k8s.io/kube-openapi/cmd/openapi-gen@v0.0.0-20211115234752-e816edb12b65)
 
+## generate grpc code for fornax internal apis used by fornax core server and session server
+internalapi-grpc-gen: fornaxcore-grpc-gen sessionservice-grpc-gen
+
 # generate fornaxcore grpc code
 PROTOC_GEN_GO = $(shell pwd)/bin/protoc-gen-go
 PROTOC_GEN_GO_GRPC = $(shell pwd)/bin/protoc-gen-go-grpc
 PROTOC = $(HOME)/.local/bin/protoc
-.PHONY: protoc-gen
-protoc-gen: ## Download protc-gen locally if necessary.
+.PHONY: fornaxcore-grpc-gen
+fornaxcore-grpc-gen: ## Download protc-gen locally if necessary.
 	$(call go-get-tool,$(PROTOC_GEN_GO),google.golang.org/protobuf/cmd/protoc-gen-go@v1.28)
 	$(call go-get-tool,$(PROTOC_GEN_GO_GRPC),google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2)
 	$(call get-protoc,$(PROTOC))
@@ -227,6 +235,14 @@ protoc-gen: ## Download protc-gen locally if necessary.
 		--go_opt=Mk8s.io/apimachinery/pkg/util/intstr/generated.proto=k8s.io/apimachinery/pkg/util/intstr \
 		--go_opt=Mpkg/apis/core/v1/generated.proto=centaurusinfra.io/fornax-serverless/pkg/apis/core/v1 \
 		pkg/fornaxcore/grpc/fornaxcore.proto
+
+
+# generate session server grpc code
+.PHONY: sessionservice-grpc-gen
+sessionservice-grpc-gen: ## Download protc-gen locally if necessary.
+	$(call go-get-tool,$(PROTOC_GEN_GO),google.golang.org/protobuf/cmd/protoc-gen-go@v1.28)
+	$(call go-get-tool,$(PROTOC_GEN_GO_GRPC),google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2)
+	$(call get-protoc,$(PROTOC))
 	$(PROTOC) -I=./ -I=./vendor \
 		--go_out=../.. \
 		--go-grpc_out=../../ \
